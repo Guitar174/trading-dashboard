@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Compound Trade Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg: #f7f5f0;
+  --surface: #ffffff;
+  --surface2: #f0ede6;
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.13);
+  --text: #1a1814;
+  --muted: #8a8070;
+  --muted2: #b5ad9e;
+  --ink: #1a1814;
+  --green: #1a6b4a;
+  --green-light: #e8f5ee;
+  --green-mid: rgba(26,107,74,0.12);
+  --green-bright: #22c07a;
+  --amber: #c47b1a;
+  --amber-light: #fdf3e3;
+  --rule: rgba(0,0,0,0.09);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* Subtle dot grid */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.container {
+  max-width: 1060px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Header */
+header {
+  padding: 52px 0 36px;
+  border-bottom: 1px solid var(--border2);
+  margin-bottom: 44px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.logo-area h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 32px;
+  font-weight: 700;
+  
+  color: var(--ink);
+  letter-spacing: -0.5px;
+  line-height: 1;
+}
+
+.logo-area h1 em {
+  
+  color: var(--green);
+}
+
+.logo-area p {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 6px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.header-meta {
+  text-align: right;
+}
+
+.header-date {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--muted);
+  letter-spacing: 0.06em;
+}
+
+.header-year {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ink);
+  display: block;
+  margin-top: 2px;
+}
+
+/* Section label */
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  color: var(--muted2);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* Controls */
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+@media (max-width: 680px) {
+  .controls-grid { grid-template-columns: 1fr; }
+}
+
+.ctrl-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 24px 20px;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.ctrl-card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  border-color: var(--border2);
+}
+
+.ctrl-card:focus-within {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(26,107,74,0.08);
+}
+
+.ctrl-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.ctrl-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 34px;
+  
+  color: var(--ink);
+  line-height: 1;
+  margin-bottom: 18px;
+}
+
+.ctrl-value .unit {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  
+  font-weight: 300;
+  color: var(--muted);
+  margin-left: 4px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 2px;
+  background: var(--surface2);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--green);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform 0.15s;
+}
+
+input[type=range]::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.ctrl-range-labels {
+  display: flex;
+  justify-content: space-between;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted2);
+  letter-spacing: 0.04em;
+}
+
+/* Metrics */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 44px;
+}
+
+@media (max-width: 680px) {
+  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.metric-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px 22px;
+}
+
+.metric-card.highlight {
+  background: var(--green-light);
+  border-color: rgba(26,107,74,0.2);
+}
+
+.metric-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.metric-value {
+  font-family: 'Inter', sans-serif;
+  font-size: 26px;
+  
+  color: var(--ink);
+  line-height: 1;
+}
+
+.metric-card.highlight .metric-value {
+  color: var(--green);
+}
+
+.metric-sub {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 5px;
+  letter-spacing: 0.02em;
+}
+
+/* Charts */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 14px;
+  margin-bottom: 44px;
+}
+
+@media (max-width: 780px) {
+  .charts-grid { grid-template-columns: 1fr; }
+}
+
+.chart-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 22px 22px 18px;
+}
+
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.chart-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.chart-legend span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* Table */
+.table-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 44px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  padding: 12px 22px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 400;
+  color: var(--muted2);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+}
+
+td {
+  padding: 13px 22px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(0,0,0,0.015); }
+
+.td-gain {
+  font-family: 'JetBrains Mono', monospace;
+  color: var(--green);
+  font-size: 12px;
+}
+
+.td-balance {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.td-open {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.td-month {
+  font-family: 'Inter', sans-serif;
+  
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.pill {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  background: var(--green-mid);
+  color: var(--green);
+  letter-spacing: 0.04em;
+}
+
+/* Footer */
+footer {
+  border-top: 1px solid var(--border);
+  padding-top: 22px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted2);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  letter-spacing: 0.04em;
+}
+
+/* Animate in */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.ctrl-card, .metric-card, .chart-card, .table-card {
+  animation: fadeUp 0.5s cubic-bezier(0.22,1,0.36,1) both;
+}
+
+.ctrl-card:nth-child(1) { animation-delay: 0.05s; }
+.ctrl-card:nth-child(2) { animation-delay: 0.10s; }
+.ctrl-card:nth-child(3) { animation-delay: 0.15s; }
+.metric-card:nth-child(1) { animation-delay: 0.10s; }
+.metric-card:nth-child(2) { animation-delay: 0.14s; }
+.metric-card:nth-child(3) { animation-delay: 0.18s; }
+.metric-card:nth-child(4) { animation-delay: 0.22s; }
+.metric-card:nth-child(5) { animation-delay: 0.26s; }
+.metric-card:nth-child(6) { animation-delay: 0.30s; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-area">
+      <h1>Compound<em>Trade</em></h1>
+      <p>Annual profit simulator &mdash; THB</p>
+    </div>
+    <div class="header-meta">
+      <div class="header-date">Starting date</div>
+      <span class="header-year">01 Jan 2026</span>
+    </div>
+  </header>
+
+  <div class="section-label">Parameters</div>
+  <div class="controls-grid">
+
+    <div class="ctrl-card">
+      <div class="ctrl-name">Initial capital</div>
+      <div class="ctrl-value" id="v-capital">500,000 <span class="unit">THB</span></div>
+      <input type="range" id="sl-capital" min="50000" max="5000000" step="50000" value="500000">
+      <div class="ctrl-range-labels"><span>฿50K</span><span>฿5M</span></div>
+    </div>
+
+    <div class="ctrl-card">
+      <div class="ctrl-name">Earn per trade</div>
+      <div class="ctrl-value" id="v-rate">5.0 <span class="unit">%</span></div>
+      <input type="range" id="sl-rate" min="0.5" max="20" step="0.5" value="5">
+      <div class="ctrl-range-labels"><span>0.5%</span><span>20%</span></div>
+    </div>
+
+    <div class="ctrl-card">
+      <div class="ctrl-name">Trades / month</div>
+      <div class="ctrl-value" id="v-trades">15 <span class="unit">trades</span></div>
+      <input type="range" id="sl-trades" min="1" max="30" step="1" value="15">
+      <div class="ctrl-range-labels"><span>1</span><span>30</span></div>
+    </div>
+
+  </div>
+
+  <div class="section-label">Year-end summary</div>
+  <div class="metrics-grid">
+    <div class="metric-card highlight">
+      <div class="metric-label">Final balance</div>
+      <div class="metric-value" id="m-final">—</div>
+      <div class="metric-sub" id="m-final-sub">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total profit</div>
+      <div class="metric-value" id="m-profit">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total return</div>
+      <div class="metric-value" id="m-return">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Monthly multiplier</div>
+      <div class="metric-value" id="m-mult">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Total trades / year</div>
+      <div class="metric-value" id="m-trades">—</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-label">Dec month gain</div>
+      <div class="metric-value" id="m-last">—</div>
+    </div>
+  </div>
+
+  <div class="section-label">Growth charts</div>
+  <div class="charts-grid">
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Balance over 12 months</div>
+        <div class="chart-legend">
+          <span><span class="dot" style="background:#1a6b4a"></span>Balance</span>
+          <span><span class="dot" style="background:#c47b1a"></span>Monthly gain</span>
+        </div>
+      </div>
+      <div style="position:relative;height:240px">
+        <canvas id="chart1"></canvas>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-title">Monthly gains</div>
+      </div>
+      <div style="position:relative;height:240px">
+        <canvas id="chart2"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Monthly breakdown</div>
+  <div class="table-card">
+    <table>
+      <thead>
+        <tr>
+          <th>Month</th>
+          <th>Opening</th>
+          <th>Gain</th>
+          <th>Closing</th>
+          <th>Growth</th>
+        </tr>
+      </thead>
+      <tbody id="tbl-body"></tbody>
+    </table>
+  </div>
+
+  <footer>
+    <span>CompoundTrade &copy; 2026 &mdash; For educational purposes only. Not financial advice.</span>
+    <span>01 Jan 2026 &mdash; 31 Dec 2026</span>
+  </footer>
+
+</div>
+
+<script>
+let chart1, chart2;
+
+function fmt(n, short) {
+  if (short) {
+    if (n >= 1e9) return '฿' + (n / 1e9).toFixed(2) + 'B';
+    if (n >= 1e6) return '฿' + (n / 1e6).toFixed(2) + 'M';
+    if (n >= 1e3) return '฿' + (n / 1e3).toFixed(1) + 'K';
+  }
+  return '฿' + Math.round(n).toLocaleString();
+}
+
+function pctFmt(p) {
+  if (p >= 1e6) return (p / 1e6).toFixed(1) + 'M%';
+  if (p >= 1e3) return Math.round(p / 1e3) + 'K%';
+  return p.toFixed(1) + '%';
+}
+
+function compute() {
+  const capital = +document.getElementById('sl-capital').value;
+  const rate    = +document.getElementById('sl-rate').value / 100;
+  const trades  = +document.getElementById('sl-trades').value;
+
+  document.getElementById('v-capital').innerHTML = (+capital).toLocaleString() + ' <span class="unit">THB</span>';
+  document.getElementById('v-rate').innerHTML    = (+document.getElementById('sl-rate').value).toFixed(1) + ' <span class="unit">%</span>';
+  document.getElementById('v-trades').innerHTML  = trades + ' <span class="unit">trades</span>';
+
+  const monthlyMult = Math.pow(1 + rate, trades);
+  const balances = [capital];
+  for (let m = 1; m <= 12; m++) balances.push(balances[m-1] * monthlyMult);
+
+  const final  = balances[12];
+  const profit = final - capital;
+  const gains  = balances.slice(1).map((b, i) => b - balances[i]);
+
+  document.getElementById('m-final').textContent     = fmt(final, true);
+  document.getElementById('m-final-sub').textContent = fmt(final, false);
+  document.getElementById('m-profit').textContent    = fmt(profit, true);
+  document.getElementById('m-return').textContent    = pctFmt(((final / capital) - 1) * 100);
+  document.getElementById('m-mult').textContent      = monthlyMult.toFixed(3) + '×';
+  document.getElementById('m-trades').textContent    = (trades * 12).toLocaleString();
+  document.getElementById('m-last').textContent      = fmt(gains[11], true);
+
+  ['sl-capital','sl-rate','sl-trades'].forEach(id => {
+    const el  = document.getElementById(id);
+    const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+    el.style.background = `linear-gradient(to right, #1a6b4a ${pct}%, #e8e4dc ${pct}%)`;
+  });
+
+  const labels    = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const allLabels = ['Start', ...labels];
+
+  const gridColor  = 'rgba(0,0,0,0.05)';
+  const tickColor  = '#aaa49a';
+  const tickFont   = { size: 10, family: 'Geist Mono' };
+  const tooltipCfg = {
+    backgroundColor: '#1a1814',
+    borderColor: 'rgba(0,0,0,0.1)',
+    borderWidth: 1,
+    titleColor: '#8a8070',
+    bodyColor: '#f7f5f0',
+    padding: 10,
+    callbacks: { label: ctx => ctx.dataset.label + ': ' + fmt(ctx.raw, false) }
+  };
+
+  if (chart1) chart1.destroy();
+  chart1 = new Chart(document.getElementById('chart1'), {
+    type: 'line',
+    data: {
+      labels: allLabels,
+      datasets: [
+        {
+          label: 'Balance',
+          data: balances,
+          borderColor: '#1a6b4a',
+          backgroundColor: 'rgba(26,107,74,0.06)',
+          fill: true, tension: 0.4,
+          pointRadius: 4,
+          pointBackgroundColor: '#1a6b4a',
+          pointBorderColor: '#f7f5f0',
+          pointBorderWidth: 2,
+          yAxisID: 'y'
+        },
+        {
+          label: 'Monthly gain',
+          data: [0, ...gains],
+          borderColor: '#c47b1a',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4,
+          pointRadius: 3,
+          pointBackgroundColor: '#c47b1a',
+          pointBorderColor: '#f7f5f0',
+          pointBorderWidth: 2,
+          borderDash: [5, 3],
+          yAxisID: 'y2'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: tooltipCfg },
+      scales: {
+        y:  { position: 'left',  ticks: { callback: v => fmt(v, true), color: tickColor, font: tickFont }, grid: { color: gridColor } },
+        y2: { position: 'right', ticks: { callback: v => fmt(v, true), color: '#c47b1a', font: tickFont }, grid: { display: false } },
+        x:  { ticks: { color: tickColor, font: tickFont, autoSkip: false, maxRotation: 0 }, grid: { color: gridColor } }
+      }
+    }
+  });
+
+  if (chart2) chart2.destroy();
+  chart2 = new Chart(document.getElementById('chart2'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Monthly gain',
+        data: gains,
+        backgroundColor: gains.map((_, i) => `rgba(26,107,74,${0.3 + i * 0.055})`),
+        borderColor: '#1a6b4a',
+        borderWidth: 1,
+        borderRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { ...tooltipCfg, callbacks: { label: ctx => 'Gain: ' + fmt(ctx.raw, false) } } },
+      scales: {
+        y: { ticks: { callback: v => fmt(v, true), color: tickColor, font: tickFont }, grid: { color: gridColor } },
+        x: { ticks: { color: tickColor, font: tickFont, autoSkip: false, maxRotation: 0 }, grid: { display: false } }
+      }
+    }
+  });
+
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const tbody  = document.getElementById('tbl-body');
+  tbody.innerHTML = '';
+  const monthPct = ((monthlyMult - 1) * 100).toFixed(1);
+  for (let m = 1; m <= 12; m++) {
+    const open = balances[m-1], close = balances[m], gain = close - open;
+    const tr   = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="td-month">${months[m-1]}</td>
+      <td class="td-open">${fmt(open, false)}</td>
+      <td class="td-gain">+${fmt(gain, true)}</td>
+      <td class="td-balance">${fmt(close, false)}</td>
+      <td><span class="pill">+${monthPct}%</span></td>
+    `;
+    tbody.appendChild(tr);
+  }
+}
+
+document.getElementById('sl-capital').addEventListener('input', compute);
+document.getElementById('sl-rate').addEventListener('input', compute);
+document.getElementById('sl-trades').addEventListener('input', compute);
+compute();
+</script>
+</body>
+</html>
