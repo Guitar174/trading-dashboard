@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,7 +36,6 @@ body {
   min-height: 100vh;
 }
 
-/* Subtle dot grid */
 body::before {
   content: '';
   position: fixed;
@@ -54,7 +54,6 @@ body::before {
   z-index: 1;
 }
 
-/* Header */
 header {
   padding: 52px 0 36px;
   border-bottom: 1px solid var(--border2);
@@ -70,14 +69,12 @@ header {
   font-family: 'Inter', sans-serif;
   font-size: 32px;
   font-weight: 700;
-  
   color: var(--ink);
   letter-spacing: -0.5px;
   line-height: 1;
 }
 
 .logo-area h1 em {
-  
   color: var(--green);
 }
 
@@ -110,7 +107,6 @@ header {
   margin-top: 2px;
 }
 
-/* Section label */
 .section-label {
   font-family: 'JetBrains Mono', monospace;
   font-size: 9px;
@@ -129,7 +125,6 @@ header {
   background: var(--rule);
 }
 
-/* Controls */
 .controls-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -171,7 +166,6 @@ header {
 .ctrl-value {
   font-family: 'Inter', sans-serif;
   font-size: 34px;
-  
   color: var(--ink);
   line-height: 1;
   margin-bottom: 18px;
@@ -180,7 +174,6 @@ header {
 .ctrl-value .unit {
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  
   font-weight: 300;
   color: var(--muted);
   margin-left: 4px;
@@ -223,7 +216,6 @@ input[type=range]::-webkit-slider-thumb:hover {
   letter-spacing: 0.04em;
 }
 
-/* Metrics */
 .metrics-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -259,7 +251,6 @@ input[type=range]::-webkit-slider-thumb:hover {
 .metric-value {
   font-family: 'Inter', sans-serif;
   font-size: 26px;
-  
   color: var(--ink);
   line-height: 1;
 }
@@ -276,7 +267,6 @@ input[type=range]::-webkit-slider-thumb:hover {
   letter-spacing: 0.02em;
 }
 
-/* Charts */
 .charts-grid {
   display: grid;
   grid-template-columns: 2fr 1fr;
@@ -332,7 +322,6 @@ input[type=range]::-webkit-slider-thumb:hover {
   flex-shrink: 0;
 }
 
-/* Table */
 .table-card {
   background: var(--surface);
   border: 1px solid var(--border);
@@ -389,7 +378,6 @@ tr:hover td { background: rgba(0,0,0,0.015); }
 
 .td-month {
   font-family: 'Inter', sans-serif;
-  
   font-size: 15px;
   color: var(--ink);
 }
@@ -405,7 +393,6 @@ tr:hover td { background: rgba(0,0,0,0.015); }
   letter-spacing: 0.04em;
 }
 
-/* Footer */
 footer {
   border-top: 1px solid var(--border);
   padding-top: 22px;
@@ -419,7 +406,6 @@ footer {
   letter-spacing: 0.04em;
 }
 
-/* Animate in */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(10px); }
   to   { opacity: 1; transform: translateY(0); }
@@ -460,7 +446,7 @@ footer {
     <div class="ctrl-card">
       <div class="ctrl-name">Initial capital</div>
       <div class="ctrl-value" id="v-capital">500,000 <span class="unit">THB</span></div>
-      <input type="range" id="sl-capital" min="50000" max="5000000" step="50000" value="500000">
+      <input type="range" id="sl-capital" min="50000" max="5000000" step="10000" value="500000">
       <div class="ctrl-range-labels"><span>฿50K</span><span>฿5M</span></div>
     </div>
 
